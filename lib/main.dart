@@ -22,11 +22,7 @@ class Edge {
   int b = 0;
   int cost = 0;
 
-  Edge(int i, int j, int weight) {
-    a = i;
-    b = j;
-    cost = weight;
-  }
+  Edge(this.a, this.b, this.cost);
 }
 
 Widget createTable(int size, List<List> _controllers) {
@@ -69,29 +65,28 @@ class MyStatefulWidget extends StatefulWidget {
 
 class _MyStatelessWidgetState extends State<MyStatefulWidget> {
   final int inf = 2147483647;
-  String _size = '0';
+  int _size = 0;
   final _controller = TextEditingController(),
       _startController = TextEditingController(),
       _endController = TextEditingController();
   var _edgeControllers = [[]];
   List<int> _path = [];
-  String _pathString = '';
-  int start = 0, end = 0, pathLength = 0;
+  int _start = 0, _end = 0, _pathLength = 0;
 
   _changeSize() {
-    setState(() => _size = _controller.text != '' ? _controller.text : '0');
+    setState(() => _size = _controller.text != '' ? int.parse(_controller.text) : 0);
     if (_controller.text != '') {
       _edgeControllers = List.generate(
-          int.parse(_size),
+          _size,
           (_) =>
-              List.generate(int.parse(_size), (_) => TextEditingController()));
+              List.generate(_size, (_) => TextEditingController()));
     }
   }
 
   @override
   void initState() {
     super.initState();
-    _controller.text = _size;
+    _controller.text = _size.toString();
     _controller.addListener(_changeSize);
   }
 
@@ -121,7 +116,7 @@ class _MyStatelessWidgetState extends State<MyStatefulWidget> {
       }
       if (!any) break;
     }
-    pathLength = d[end];
+    _pathLength = d[end];
     List<int>? path = [];
     if (d[end] == inf) {
       return path;
@@ -164,31 +159,31 @@ class _MyStatelessWidgetState extends State<MyStatefulWidget> {
           ],
           controller: _endController,
         ),
-        createTable(int.parse(_size), _edgeControllers),
-        RaisedButton(
+        createTable(_size, _edgeControllers),
+        ElevatedButton(
             child: const Text('Find the shortest path'),
             onPressed: () {
               e.clear();
-              for (int i = 0; i < int.parse(_size); i++) {
-                for (int j = 0; j < int.parse(_size); j++) {
+              for (int i = 0; i < _size; i++) {
+                for (int j = 0; j < _size; j++) {
                   if (_edgeControllers[i][j].text != '') {
                     e.add(Edge(i, j, int.parse(_edgeControllers[i][j].text)));
                   }
                 }
               }
               if ((_startController.text != '') &&
-                  (int.parse(_startController.text) <= int.parse(_size))) {
-                start = int.parse(_startController.text) - 1;
+                  (int.parse(_startController.text) <= _size)) {
+                _start = int.parse(_startController.text) - 1;
               } else {
-                start = 0;
+                _start = 0;
               }
               if ((_endController.text != '') &&
-                  (int.parse(_endController.text) <= int.parse(_size))) {
-                end = int.parse(_endController.text) - 1;
+                  (int.parse(_endController.text) <= _size)) {
+                _end = int.parse(_endController.text) - 1;
               } else {
-                end = 0;
+                _end = 0;
               }
-              _path = solve(e, int.parse(_size), start, end);
+              _path = solve(e, _size, _start, _end);
               if (_path.isEmpty) {
                 showDialog(
                   context: context,
@@ -207,20 +202,14 @@ class _MyStatelessWidgetState extends State<MyStatefulWidget> {
                   },
                 );
               } else {
-                _pathString = ''; //add the 'path' class
-                for (int i = 0; i < _path.length; i++) {
-                  _pathString += _path[i].toString();
-                  if (i < _path.length - 1) {
-                    _pathString += ' ';
-                  }
-                }
+                String _pathString = _path.join(", ");
                 showDialog(
                   context: context,
                   builder: (BuildContext context) {
                     return AlertDialog(
                       title: const Text('Path has been found'),
                       content: Text(
-                          'The shortest path is $_pathString, its length is $pathLength'),
+                          'The shortest path is $_pathString, its length is $_pathLength'),
                       actions: <Widget>[
                         TextButton(
                           child: const Text('OK'),
